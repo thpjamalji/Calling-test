@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ZegoCloud Free Calling App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            width: 250px;
+        }
+        #root {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📞 ZegoCloud Free Video Call</h2>
+
+    <!-- Input fields for AppID and ServerSecret -->
+    <input type="number" id="appID" placeholder="Enter AppID"><br>
+    <input type="text" id="serverSecret" placeholder="Enter ServerSecret"><br>
+    <button onclick="startCall()">Start Call</button>
+
+    <!-- Video call container -->
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt"></script>
+    <script>
+        function startCall() {
+            const appID = Number(document.getElementById("appID").value);
+            const serverSecret = document.getElementById("serverSecret").value;
+
+            if (!appID || !serverSecret) {
+                alert("⚠️ Please enter both AppID and ServerSecret!");
+                return;
+            }
+
+            const userID = "user_" + Date.now();
+            const roomID = "call_room"; // fixed room for demo
+            const userName = "Caller_" + Math.floor(Math.random() * 1000);
+
+            // Generate token for testing
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+                appID,
+                serverSecret,
+                roomID,
+                userID,
+                userName
+            );
+
+            // Create ZegoUIKit instance and join room
+            const zp = ZegoUIKitPrebuilt.create(kitToken);
+            zp.joinRoom({
+                container: document.getElementById("root"),
+                scenario: {
+                    mode: ZegoUIKitPrebuilt.OneONoneCall
+                },
+                showPreJoinView: false
+            });
+        }
+    </script>
+
+</body>
+</html>
