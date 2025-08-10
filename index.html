@@ -1,75 +1,463 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ZegoCloud Free Calling App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraCall - Smart Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #007aff;
+            --primary-hover: #005ecb;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --background-gradient: linear-gradient(135deg, #a8e0ff 0%, #8ee3f8 100%);
+            --white-glass: rgba(255, 255, 255, 0.6);
+            --border-glass: 1.5px solid rgba(255, 255, 255, 0.3);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f2f2f2;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: var(--background-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Main Container & Cards --- */
+        .main-container {
+            width: 100%;
+            max-width: 480px;
             padding: 20px;
+            box-sizing: border-box;
         }
-        input, button {
+
+        .card {
+            background-color: var(--white-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: var(--border-glass);
+            transition: all 0.5s ease-out;
+            position: relative;
+        }
+        
+        .app-title {
+            text-align: center;
+            color: #1a2c4e;
+            font-weight: 700;
+            font-size: 28px;
+            margin: 0 0 30px 0;
+        }
+        .app-title span {
+            color: var(--primary-color);
+        }
+
+        /* --- Login --- */
+        #login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        #loginBtn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #loginBtn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+        }
+        
+        /* --- Dashboard --- */
+        .dashboard-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            text-align: center;
+            color: #1a2c4e;
+            font-size: 22px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .settings-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+            color: #555;
+            transition: all 0.3s;
+        }
+        .settings-icon:hover {
+            color: var(--primary-color);
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        .user-info {
+            font-weight: 600;
+            color: #333;
+        }
+        .call-actions button {
+            border: none;
+            background: none;
+            font-size: 22px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .call-actions .video-call-btn { color: var(--success-color); }
+        .call-actions .voice-call-btn { color: var(--primary-color); }
+        
+        #no-users-online {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        /* --- Settings & Incoming Call Modals --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay .card {
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            text-align: center;
+        }
+        #caller-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a2c4e;
+            margin: 15px 0;
+        }
+        .modal-actions { margin-top: 25px; }
+        .modal-actions button {
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        #acceptBtn { background-color: var(--success-color); }
+        #declineBtn { background-color: var(--danger-color); }
+
+        /* --- Settings Panel --- */
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group select {
+            width: 100%;
             padding: 10px;
-            margin: 5px;
-            width: 250px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
         }
+        #saveSettingsBtn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- ZegoCloud UI --- */
         #root {
             width: 100%;
-            height: 500px;
-            margin-top: 20px;
-            background: #000;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <h2>📞 ZegoCloud Free Video Call</h2>
+    <div class="main-container" id="mainContainer">
+        <!-- Step 1: Login Form -->
+        <div class="card" id="login-container">
+            <h2 class="app-title">Aura<span>Call</span></h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Enter your name" required>
+                <button type="submit" id="loginBtn">Join Dashboard</button>
+            </form>
+        </div>
 
-    <!-- Input fields for AppID and ServerSecret -->
-    <input type="number" id="appID" placeholder="Enter AppID"><br>
-    <input type="text" id="serverSecret" placeholder="Enter ServerSecret"><br>
-    <button onclick="startCall()">Start Call</button>
+        <!-- Step 2: Dashboard -->
+        <div class="card hidden" id="dashboard">
+            <div class="dashboard-header">
+                <span>Online Users</span>
+                <i class="fas fa-cog settings-icon" id="settingsIcon"></i>
+            </div>
+            <ul class="user-list" id="userList"></ul>
+            <div id="no-users-online" class="hidden">
+                <i class="fas fa-ghost" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>No one is online right now.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step 3: Modals -->
+    <div id="incomingCallModal" class="modal-overlay hidden">
+        <div class="card">
+            <i class="fas fa-phone-volume fa-beat" style="font-size: 40px; color: var(--primary-color);"></i>
+            <h3 id="caller-name">Incoming Call...</h3>
+            <div class="modal-actions">
+                <button id="acceptBtn"><i class="fas fa-phone"></i> Accept</button>
+                <button id="declineBtn"><i class="fas fa-phone-slash"></i> Decline</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Video call container -->
-    <div id="root"></div>
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="card">
+            <h3>Settings</h3>
+            <div class="form-group">
+                <label for="ringtoneSelect">Ringtone</label>
+                <select id="ringtoneSelect"></select>
+            </div>
+            <button id="saveSettingsBtn">Close</button>
+        </div>
+    </div>
 
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt"></script>
+    <!-- Audio Element for Ringtone -->
+    <audio id="ringtoneAudio"></audio>
+
+    <!-- Step 4: ZegoCloud UI Container -->
+    <div id="root" class="hidden"></div>
+
+    <!-- ZegoCloud SDK -->
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+
     <script>
-        function startCall() {
-            const appID = Number(document.getElementById("appID").value);
-            const serverSecret = document.getElementById("serverSecret").value;
+        // --- CONFIGURATION ---
+        const appID = 335894343; // Your AppID
+        const serverSecret = "546545d8b69f4c086fcf0efde90ba234"; // Your ServerSecret
+        let localUser = { id: '', name: '' };
+        let callState = { type: '', callee: '' };
 
-            if (!appID || !serverSecret) {
-                alert("⚠️ Please enter both AppID and ServerSecret!");
-                return;
+        // --- RINGTONES ---
+        const ringtones = [
+            { name: 'Default Ring', url: 'https://www.soundjay.com/buttons/sounds/button-1.mp3' },
+            { name: 'Digital Alarm', url: 'https://cdn.pixabay.com/audio/2021/08/04/audio_593d402375.mp3' },
+            { name: 'Office Phone', url: 'https://cdn.pixabay.com/audio/2022/03/15/audio_59392823b8.mp3' },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const mainContainer = document.getElementById('mainContainer');
+        const loginContainer = document.getElementById('login-container');
+        const dashboard = document.getElementById('dashboard');
+        const userList = document.getElementById('userList');
+        const noUsersOnlineDiv = document.getElementById('no-users-online');
+        const rootContainer = document.getElementById('root');
+        
+        // Modals
+        const incomingCallModal = document.getElementById('incomingCallModal');
+        const settingsModal = document.getElementById('settingsModal');
+        
+        // Buttons
+        const loginForm = document.getElementById('login-form');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const declineBtn = document.getElementById('declineBtn');
+        const settingsIcon = document.getElementById('settingsIcon');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        
+        // Settings
+        const ringtoneSelect = document.getElementById('ringtoneSelect');
+        const ringtoneAudio = document.getElementById('ringtoneAudio');
+
+        // --- SIMULATION ---
+        const simulatedUsers = Math.random() > 0.3 ? [ // 70% chance of users being online
+            { id: 'user_101', name: 'Alia' },
+            { id: 'user_102', name: 'Ranbir' },
+            { id: 'user_103', name: 'Katrina' },
+        ] : [];
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            populateRingtoneSelector();
+            loadSettings();
+        };
+        
+        // --- SETTINGS LOGIC ---
+        function populateRingtoneSelector() {
+            ringtones.forEach(ring => {
+                const option = document.createElement('option');
+                option.value = ring.url;
+                option.textContent = ring.name;
+                ringtoneSelect.appendChild(option);
+            });
+        }
+
+        function loadSettings() {
+            const savedRingtone = localStorage.getItem('auraCallRingtone') || ringtones[0].url;
+            ringtoneSelect.value = savedRingtone;
+            ringtoneAudio.src = savedRingtone;
+        }
+
+        function saveSettings() {
+            const selectedRingtone = ringtoneSelect.value;
+            localStorage.setItem('auraCallRingtone', selectedRingtone);
+            ringtoneAudio.src = selectedRingtone;
+            settingsModal.classList.add('hidden');
+        }
+
+        // --- UI & EVENT LISTENERS ---
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            localUser.name = document.getElementById('username').value.trim();
+            localUser.id = 'user_' + String(Math.floor(Math.random() * 100000));
+            loginContainer.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            displayDashboardContent();
+        });
+
+        settingsIcon.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        saveSettingsBtn.addEventListener('click', saveSettings);
+        declineBtn.addEventListener('click', declineCall);
+        acceptBtn.addEventListener('click', acceptCall);
+
+
+        function displayDashboardContent() {
+            if (simulatedUsers.length === 0) {
+                noUsersOnlineDiv.classList.remove('hidden');
+                userList.classList.add('hidden');
+            } else {
+                noUsersOnlineDiv.classList.add('hidden');
+                userList.classList.remove('hidden');
+                userList.innerHTML = '';
+                simulatedUsers.forEach(user => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'user-list-item';
+                    listItem.innerHTML = `
+                        <div class="user-info"><i class="fas fa-user-circle" style="color: #555; margin-right: 10px;"></i>${user.name}</div>
+                        <div class="call-actions">
+                            <button class="voice-call-btn" onclick="initiateCall('${user.name}', 'voice')" title="Voice Call"><i class="fas fa-phone"></i></button>
+                            <button class="video-call-btn" onclick="initiateCall('${user.name}', 'video')" title="Video Call"><i class="fas fa-video"></i></button>
+                        </div>`;
+                    userList.appendChild(listItem);
+                });
             }
+        }
+        
+        // --- CALL FLOW LOGIC ---
+        function initiateCall(calleeName, type) {
+            callState = { type: type, callee: calleeName };
+            document.getElementById('caller-name').innerText = `Calling ${calleeName}...`;
+            incomingCallModal.classList.remove('hidden');
+            ringtoneAudio.loop = true;
+            ringtoneAudio.play();
+        }
 
-            const userID = "user_" + Date.now();
-            const roomID = "call_room"; // fixed room for demo
-            const userName = "Caller_" + Math.floor(Math.random() * 1000);
+        function declineCall() {
+            ringtoneAudio.pause();
+            incomingCallModal.classList.add('hidden');
+            // In a real app, send a "decline" signal here
+        }
 
-            // Generate token for testing
-            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-                appID,
-                serverSecret,
-                roomID,
-                userID,
-                userName
-            );
+        function acceptCall() {
+            ringtoneAudio.pause();
+            incomingCallModal.classList.add('hidden');
+            mainContainer.classList.add('hidden');
+            rootContainer.classList.remove('hidden');
 
-            // Create ZegoUIKit instance and join room
+            const roomID = "Aura-Call-Room_" + [localUser.id, callState.callee].sort().join('_');
+            startZegoCall(roomID, callState.type, rootContainer);
+        }
+
+        function startZegoCall(roomID, callType, element) {
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, localUser.id, localUser.name);
             const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+            const isVideoCall = callType === 'video';
+            
             zp.joinRoom({
-                container: document.getElementById("root"),
+                container: element,
                 scenario: {
-                    mode: ZegoUIKitPrebuilt.OneONoneCall
+                    mode: ZegoUIKitPrebuilt.OneONoneCall,
                 },
-                showPreJoinView: false
+                // This is the key for allowing voice-to-video switching
+                showMyCameraToggleButton: true, 
+                showAudioVideoSettingsButton: true,
+                
+                // Set initial camera state based on call type
+                turnOnCameraWhenJoining: isVideoCall,
+                
+                showPreJoinView: true, // Show a preview before joining
+                onLeaveRoom: () => {
+                    window.location.reload(); // Reload to go back to dashboard
+                }
             });
         }
     </script>
-
 </body>
 </html>
